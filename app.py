@@ -1,6 +1,6 @@
 # Streamlit App: Mira – Admissions & Intake Agent
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, date
 import smtplib
 from email.message import EmailMessage
 
@@ -10,7 +10,7 @@ st.write("Mira helps automate the resident intake process for Tilo Haven Senior 
 st.header("📋 New Resident Intake Form")
 with st.form("intake_form"):
     full_name = st.text_input("Resident Full Name")
-    dob = st.date_input("Date of Birth")
+    dob = st.date_input("Date of Birth", value=date(1950, 1, 1), min_value=date(1900, 1, 1), max_value=datetime.today().date())
     contact_name = st.text_input("Primary Contact (POA)")
     contact_phone = st.text_input("POA Phone Number")
     contact_email = st.text_input("POA Email")
@@ -25,7 +25,7 @@ if submitted:
 
     msg = EmailMessage()
     msg["Subject"] = "New Resident Intake Submission"
-    msg["From"] = "your_email@example.com"  # Replace with actual sending email
+    msg["From"] = "your_email@example.com"
     msg["To"] = "dmd@azauricommunications.net"
     msg.set_content(
         f"New Resident Intake Received:\n\n"
@@ -40,8 +40,11 @@ if submitted:
     )
 
     try:
-        with smtplib.SMTP_SSL("smtp.yourmailprovider.com", 465) as smtp:  # Replace with your SMTP server
-            smtp.login("dmd@azauricommunications.net", "WealthPack1120!!")     # Replace with your credentials
+        with smtplib.SMTP_SSL("smtp.yourmailprovider.com", 465) as smtp:
+            smtp.login("your_email@example.com", "your_app_password")
             smtp.send_message(msg)
+    except Exception as e:
+        st.error(f"Email failed to send: {e}")
+
     except Exception as e:
         st.error(f"Email failed to send: {e}")
