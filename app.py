@@ -1,9 +1,9 @@
-# Streamlit App: Clara – Admissions & Intake Agent
+# Streamlit App: Mira – Admissions & Intake Agent
 import streamlit as st
 from datetime import datetime
 
-st.title("🏠 Clara – Tilo Haven Admissions Agent")
-st.write("Clara helps automate the resident intake process for Tilo Haven Senior Living.")
+st.title("🏠 Mira – Tilo Haven Admissions Agent")
+st.write("Mira helps automate the resident intake process for Tilo Haven Senior Living.")
 
 st.header("📋 New Resident Intake Form")
 with st.form("intake_form"):
@@ -18,5 +18,5 @@ with st.form("intake_form"):
     submitted = st.form_submit_button("Submit Intake")
 
 if submitted:
-    st.success("✅ Clara has received the resident information and will process the intake.")
+    st.success("✅ Mira has received the resident information and will process the intake.")
     st.info("An email has been sent to the admissions team and POA with the next steps.")
