@@ -26,7 +26,7 @@ if submitted:
     msg = EmailMessage()
     msg["Subject"] = "New Resident Intake Submission"
     msg["From"] = "your_email@example.com"
-    msg["To"] = "dmd@azauricommunications.net"
+    msg["To"] = "dmd@tilohaven.com"
     msg.set_content(
         f"New Resident Intake Received:\n\n"
         f"Resident Name: {full_name}\n"
@@ -46,5 +46,48 @@ if submitted:
     except Exception as e:
         st.error(f"Email failed to send: {e}")
 
-    except Exception as e:
-        st.error(f"Email failed to send: {e}")
+    # ✅ Push to Zoho CRM
+    def push_to_zoho_crm(access_token, api_domain, form_data):
+        url = f"{api_domain}/crm/v2/Admissions"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "data": [
+                {
+                    "Full_Name": full_name,
+                    "Date_of_Birth": str(dob),
+                    "POA_Name": contact_name,
+                    "POA_Phone": contact_phone,
+                    "POA_Email": contact_email,
+                    "Insurance_Type": insurance_type,
+                    "Move_In_Date": str(move_in_date),
+                    "Needs": needs
+                }
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        return response.status_code, response.json()
+
+    access_token = "YOUR_ACCESS_TOKEN"
+    api_domain = "https://www.zohoapis.com"
+
+    form_data = {
+        "full_name": full_name,
+        "dob": dob,
+        "contact_name": contact_name,
+        "contact_phone": contact_phone,
+        "contact_email": contact_email,
+        "insurance_type": insurance_type,
+        "move_in_date": move_in_date,
+        "needs": needs
+    }
+
+    status, result = push_to_zoho_crm(access_token, api_domain, form_data)
+
+    if status == 201:
+        st.success("✅ Intake submitted to Zoho CRM successfully!")
+    else:
+        st.error(f"❌ Zoho CRM submission failed: {result}")
