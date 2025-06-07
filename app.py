@@ -1,11 +1,11 @@
-# Streamlit App: Mira – Admissions & Intake Agent
+# mira.py
 import streamlit as st
 from datetime import datetime, date
-import smtplib
-from email.message import EmailMessage
+import requests
+import json
 
 st.title("🏠 Mira – Tilo Haven Admissions Agent")
-st.write("Mira helps automate the resident intake process for Tilo Haven Senior Living.")
+st.write("Mira automates the resident intake process for Tilo Haven Senior Living.")
 
 st.header("📋 New Resident Intake Form")
 with st.form("intake_form"):
@@ -17,77 +17,56 @@ with st.form("intake_form"):
     insurance_type = st.selectbox("Insurance Type", ["Medicaid", "Medicare", "Private Pay"])
     move_in_date = st.date_input("Preferred Move-in Date")
     needs = st.text_area("Describe any medical or personal care needs")
+    hipaa_consent = st.checkbox("I authorize Tilo Haven Senior Living to contact me regarding this intake. My privacy is important and will not be shared.")
+
     submitted = st.form_submit_button("Submit Intake")
 
 if submitted:
-    st.success("✅ Mira has received the resident information and will process the intake.")
-    st.info("An email has been sent to the admissions team and POA with the next steps.")
+    if not hipaa_consent:
+        st.warning("⚠️ Please agree to the HIPAA consent to proceed.")
+    else:
+        age = (datetime.today().date() - dob).days // 365
+        st.success("✅ Mira has received the intake and will process it.")
+        st.info(f"Resident Age: {age} years")
+        if age < 55:
+            st.warning("⚠️ This resident is under the typical senior living threshold (55+). Confirm eligibility.")
 
-    msg = EmailMessage()
-    msg["Subject"] = "New Resident Intake Submission"
-    msg["From"] = "your_email@example.com"
-    msg["To"] = "dmd@tilohaven.com"
-    msg.set_content(
-        f"New Resident Intake Received:\n\n"
-        f"Resident Name: {full_name}\n"
-        f"Date of Birth: {dob}\n"
-        f"Primary Contact (POA): {contact_name}\n"
-        f"POA Phone: {contact_phone}\n"
-        f"POA Email: {contact_email}\n"
-        f"Insurance Type: {insurance_type}\n"
-        f"Preferred Move-In Date: {move_in_date}\n"
-        f"Needs: {needs}"
-    )
+        # Prepare data for Zoho CRM
+        form_data = {
+            "data": [{
+                "Resident_Full_Name": full_name,
+                "Date_of_Birth": str(dob),
+                "POA_Name": contact_name,
+                "POA_Email": contact_email,
+                "POA_Phone": contact_phone,
+                "Insurance_Type": insurance_type,
+                "Preferred_Move_in_Date": str(move_in_date),
+                "Needs": needs,
+                "HIPAA_Consent": hipaa_consent
+            }]
+        }
 
-    try:
-        with smtplib.SMTP_SSL("smtp.yourmailprovider.com", 465) as smtp:
-            smtp.login("your_email@example.com", "your_app_password")
-            smtp.send_message(msg)
-    except Exception as e:
-        st.error(f"Email failed to send: {e}")
+        # Load tokens securely (replace with your method if needed)
+        access_token = "1000.142399f215d145346f799cb5269bdf24.cc2f02a0c67964a7c979a51c8023acb9"
+        api_domain = "https://www.zohoapis.com"
 
-    # ✅ Push to Zoho CRM
-    def push_to_zoho_crm(access_token, api_domain, form_data):
-        url = f"{api_domain}/crm/v2/Admissions"
         headers = {
-            "Authorization": f"Bearer {access_token}",
+            "Authorization": f"Zoho-oauthtoken {access_token}",
             "Content-Type": "application/json"
         }
-        data = {
-            "data": [
-                {
-                    "Full_Name": full_name,
-                    "Date_of_Birth": str(dob),
-                    "POA_Name": contact_name,
-                    "POA_Phone": contact_phone,
-                    "POA_Email": contact_email,
-                    "Insurance_Type": insurance_type,
-                    "Move_In_Date": str(move_in_date),
-                    "Needs": needs
-                }
-            ]
-        }
 
-        response = requests.post(url, headers=headers, json=data)
-        return response.status_code, response.json()
+        url = f"{api_domain}/crm/v2/Admissions"
+        response = requests.post(url, headers=headers, data=json.dumps(form_data))
 
-    access_token = "YOUR_ACCESS_TOKEN"
-    api_domain = "https://www.zohoapis.com"
+        if response.status_code == 201:
+            st.success("✅ Intake successfully logged to Zoho CRM.")
+        else:
+            st.error(f"❌ Failed to log intake in Zoho CRM. Status code: {response.status_code}")
+            st.error(response.text)
 
-    form_data = {
-        "full_name": full_name,
-        "dob": dob,
-        "contact_name": contact_name,
-        "contact_phone": contact_phone,
-        "contact_email": contact_email,
-        "insurance_type": insurance_type,
-        "move_in_date": move_in_date,
-        "needs": needs
-    }
+        # Show booking link
+        st.markdown("---")
+        st.subheader("📞 Book an Admissions Call or Facility Tour")
+        st.markdown("[Click here to schedule](https://dmd-tilohaven.zohobookings.com/#/4766432000000048006)")
 
-    status, result = push_to_zoho_crm(access_token, api_domain, form_data)
 
-    if status == 201:
-        st.success("✅ Intake submitted to Zoho CRM successfully!")
-    else:
-        st.error(f"❌ Zoho CRM submission failed: {result}")
