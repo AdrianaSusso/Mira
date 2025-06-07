@@ -30,13 +30,11 @@ with st.form("intake_form"):
 TENANT_ID = st.secrets["TENANT_ID"]
 CLIENT_ID = st.secrets["CLIENT_ID"]
 CLIENT_SECRET = st.secrets["CLIENT_SECRET"]
-SENDER_EMAIL = "intake@tilohaven.com"
+SENDER_EMAIL = "adriana@azauricommunications.net"
 RECIPIENT_EMAIL = "intake@tilohaven.com"
 BCC_EMAIL = "admin@tilohaven.com"
-
-# Booking links
-ADMISSIONS_LINK = "https://dmd-tilohaven.zohobookings.com/#/4766432000000046006?serviceId=4766432000000048006"
-TOUR_LINK = "https://dmd-tilohaven.zohobookings.com/#/4766432000000046006?serviceId=4766432000000048020"
+BOOKING_LINK_ADMISSIONS = "https://dmd-tilohaven.zohobookings.com/#/4766432000000046006?serviceId=4766432000000048006"
+BOOKING_LINK_TOUR = "https://dmd-tilohaven.zohobookings.com/#/4766432000000046006?serviceId=4766432000000048020"
 
 # Zoho Configs
 ZOHO_CLIENT_ID = st.secrets["ZOHO_CLIENT_ID"]
@@ -116,8 +114,8 @@ if submitted:
         age = (today - dob).days // 365
         st.success("✅ Mira has received the resident information and will process the intake.")
         st.info("An email has been sent to the admissions team with next steps.")
-        st.markdown(f"📞 [Schedule an Admissions Call]({ADMISSIONS_LINK})")
-        st.markdown(f"🏠 [Schedule a Facility Tour]({TOUR_LINK})")
+        st.markdown(f"[📅 Schedule an Admissions Call]({BOOKING_LINK_ADMISSIONS})")
+        st.markdown(f"[🏥 Schedule a Facility Tour]({BOOKING_LINK_TOUR})")
 
         # Email content
         subject = "New Resident Intake Submission"
@@ -156,4 +154,3 @@ if submitted:
                 st.error(f"❌ Failed to log intake in Zoho CRM. Status code: {status}\n{result}")
         else:
             st.error("❌ Failed to refresh Zoho access token.")
-
