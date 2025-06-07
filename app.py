@@ -57,6 +57,7 @@ if submitted and authorize:
     age = (datetime.today().date() - dob).days // 365
     st.success("✅ Mira has received the resident information and will process the intake.")
     st.info("📅 A team member will follow up soon.")
+st.markdown("[📅 Click here to schedule your admissions call or facility tour](https://dmd-tilohaven.zohobookings.com/#/4766432000000048006)")
 
     # Email alert
     msg = EmailMessage()
