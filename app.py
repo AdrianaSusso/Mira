@@ -1,4 +1,3 @@
-# Streamlit App: Mira – Admissions & Intake Agent
 import streamlit as st
 from datetime import datetime, date
 import requests
